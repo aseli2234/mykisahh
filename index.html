@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tebak je apa ni heheha</title>
+  <link rel="icon" type="image/png" href="my kisah/yayaya.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Styling Kartun Amplop */
+    .envelope-kartun {
+      width: 240px; /* Lebih besar */
+      height: 160px;
+      background: #fca5a5; /* Merah muda lembut */
+      position: relative;
+      border-radius: 12px; /* Lebih membulat */
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(252, 165, 165, 0.5), 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Animasi pop */
+    }
+    .envelope-kartun:hover {
+      transform: scale(1.1) rotate(-3deg);
+      box-shadow: 0 15px 30px rgba(252, 165, 165, 0.7), 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Penutup Atas Amplop (Segitiga) */
+    .flaps {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Segitiga Bawah (Terlihat saat terbuka) */
+    .flaps:before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 120px 80px 120px;
+      border-color: transparent transparent #e08080 transparent; /* Warna Kuning Ceria */
+      transform: translateY(0%);
+      transition: transform 0.6s ease;
+      z-index: 20;
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* Segitiga Atas (Tutup Amplop) */
+    .flaps:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 80px 120px 0 120px;
+      border-color: #d65353 transparent transparent transparent; /* Merah Lebih Gelap */
+      transform-origin: top;
+      transition: transform 0.6s ease;
+      z-index: 30;
+      border-radius: 12px 12px 0 0;
+    }
+
+    /* Animasi Buka */
+    .envelope-kartun.open .flaps:after {
+      transform: rotateX(180deg) translateY(-5px);
+      z-index: 10;
+    }
+    .envelope-kartun.open .flaps:before {
+      transform: translateY(0);
+      z-index: 20;
+    }
+
+    /* Kartu Surat (Letter) */
+    .letter-kartun {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 85%;
+      height: 130%;
+      background: white;
+      border-radius: 8px;
+      transition: transform 0.6s ease 0.3s;
+      z-index: 10;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border: 2px dashed #f87171; /* Garis putus-putus gemas */
+    }
+
+    .envelope-kartun.open .letter-kartun {
+      transform: translate(-50%, -50%) scale(1) translateY(-20px); /* Keluar sedikit */
+    }
+
+    /* Animasi Fade In (untuk kuis) */
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsif Kuis Card */
+    .quiz-card {
+      max-width: 90vw;
+      width: 400px;
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.3), 0 6px 12px rgba(0, 0, 0, 0.1);
+      transform-origin: center;
+      animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Tombol Interaktif */
+    .quiz-button {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .quiz-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .quiz-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.5); /* Fokus Pink */
+    }
+  </style>
+</head>
+<body class="bg-pink-100 flex items-center justify-center h-screen overflow-hidden font-sans">
+
+  <div id="amplop" class="envelope-kartun">
+    <div class="flaps"></div>
+    <div class="letter-kartun flex flex-col justify-center items-center">
+      <h1 class="text-xl md:text-2xl font-extrabold text-pink-600 mb-4 tracking-tight">
+        tebak ini apa rek 💕
+      </h1>
+      <button id="mulai" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full transition quiz-button text-lg">
+        Baca Surat Cinta Ini 💌
+      </button>
+    </div>
+  </div>
+
+  <div id="quiz" class="hidden absolute flex flex-col items-center p-4">
+    <div class="quiz-card text-center fade-in">
+        <p class="text-pink-500 text-sm font-medium mb-2" id="progressText">Pertanyaan 1 dari 7</p>
+        <h2 id="pertanyaan" class="text-2xl font-bold text-pink-800 mb-8"></h2>
+        <div class="flex flex-col md:flex-row gap-4 w-full">
+          <button id="opsi1" class="bg-pink-400 hover:bg-pink-500 text-white quiz-button"></button>
+          <button id="opsi2" class="bg-pink-400 hover:bg-pink-500 text-white quiz-button"></button>
+        </div>
+    </div>
+  </div>
+
+  <div id="popup" class="popup hidden">
+    <div id="popupContent" class="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-sm-19 quiz-card">
+      <h3 id="popupText" class="text-2xl text-pink-600 font-extrabold mb-6"></h3>
+      <button id="okBtn" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full transition quiz-button text-lg">
+        Okkei 😍
+      </button>
+    </div>
+  </div>
+
+  <audio id="bgm" src="my kisah/Audiowangsap.mp3" loop></audio>
+
+  <script>
+    const amplop = document.getElementById('amplop');
+    const quiz = document.getElementById('quiz');
+    const pertanyaanEl = document.getElementById('pertanyaan');
+    const opsi1 = document.getElementById('opsi1');
+    const opsi2 = document.getElementById('opsi2');
+    const popup = document.getElementById('popup');
+    const popupText = document.getElementById('popupText');
+    const okBtn = document.getElementById('okBtn');
+    const bgm = document.getElementById('bgm');
+    const progressText = document.getElementById('progressText');
+
+    const pertanyaanList = [
+      { q: "Berapa kali kamu senyum hari ini?", a1: "10 kali", a2: "100 kali" },
+      { q: "Kamu lebih suka dikasih bunga atau dikasih coklat?", a1: "Dikasih Bunga", a2: "Dikasih Coklat" },
+      { q: "Kamu lebih suka aku nyapa pagi-pagi atau malam sebelum tidur?", a1: "Pagi-pagi", a2: "Malem" },
+      { q: "Kalau kangen, kamu nyari aku duluan atau nunggu aku nyapa?", a1: "Cari duluan", a2: "Nunggu disapa" },
+      { q: "Kamu mau aku jadi alasan senyum kamu, atau alasan susah tidur kamu?", a1: "Alasan Senyum", a2: "Alasan Susah Tidur" },
+      { q: "Kalau kita jalan bareng, kamu mau gandeng tangan atau jalan biasa aja?", a1: "Gandengan Tangan", a2: "Jalan biasa aja" },
+      { q: "Kamu pilih aku hadir di mimpi kamu, atau di hadapan kamu beneran?", a1: "Di Mimpi", a2: "Di hadapan aku" },
+      { q: "Kamu lebih suka dibilang manis kayak gula, atau menggemaskan kayak boneka?", a1: "Manis kayak gula", a2: "Menggemaskan kayak boneka" },
+      { q: "Kalau aku jadi kucing, kamu mau panggil aku 'Meong' atau 'Sayang'?", a1: "Panggil 'Meong'", a2: "Panggil 'Sayang'" },
+      { q: "Pilih: Jadi kue cubit rasa red velvet, atau jadi bantal biar bisa dipeluk?", a1: "Kue Cubit Red Velvet", a2: "Jadi Bantal buat dipeluk" }
+    ];
+
+    let index = 0;
+
+    amplop.addEventListener('click', () => {
+      if (!amplop.classList.contains('open')) {
+          amplop.classList.add('open');
+          // Coba putar musik, tangani jika browser memblokirnya
+          const playPromise = bgm.play();
+          if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                  console.log("Autoplay diblokir:", error);
+                  // Biarkan tombol 'Mulai' menjadi trigger kedua jika diperlukan
+              });
+          }
+      }
+    });
+
+    document.getElementById('mulai').addEventListener('click', () => {
+      // Sembunyikan amplop dengan transisi
+      amplop.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      amplop.style.opacity = '0';
+      amplop.style.transform = 'translateY(100px)';
+
+      setTimeout(() => {
+        amplop.classList.add('hidden');
+        quiz.classList.remove('hidden');
+        quiz.querySelector('.quiz-card').classList.add('fade-in');
+        tampilkanPertanyaan();
+      }, 500);
+    });
+
+    function tampilkanPertanyaan() {
+      const p = pertanyaanList[index];
+      pertanyaanEl.textContent = p.q;
+      opsi1.textContent = p.a1;
+      opsi2.textContent = p.a2;
+      progressText.textContent = `Pertanyaan ${index + 1} dari ${pertanyaanList.length}`;
+    }
+
+    function jawab() {
+      // Tambahkan efek kilas balik (flash effect) pada kuis card
+      const quizCard = quiz.querySelector('.quiz-card');
+      quizCard.style.transition = 'transform 0.2s ease';
+      quizCard.style.transform = 'scale(0.98)';
+
+      setTimeout(() => {
+          quizCard.style.transform = 'scale(1)';
+      }, 200);
+
+      index++;
+      if (index < pertanyaanList.length) {
+        // Tampilkan pertanyaan berikutnya dengan animasi ringan
+        pertanyaanEl.classList.remove('fade-in');
+        void pertanyaanEl.offsetWidth; // Trigger reflow
+        pertanyaanEl.classList.add('fade-in');
+        tampilkanPertanyaan();
+      } else {
+        quiz.classList.add('hidden');
+        popup.classList.remove('hidden');
+        popup.querySelector('.quiz-card').classList.add('popIn');
+        popupText.textContent = "Kamu 110% menggemaskan hari ini 😍";
+        // Baris bgm.pause(); telah dihapus di sini, memastikan musik terus berulang (loop)
+      }
+    }
+
+    opsi1.addEventListener('click', jawab);
+    opsi2.addEventListener('click', jawab);
+
+    okBtn.addEventListener('click', () => {
+      popupText.textContent = "Hai ";
+      okBtn.classList.add('hidden');
+      // Tambahkan kelas untuk efek tambahan pada popup content
+      const popupContent = document.getElementById('popupContent');
+      popupContent.style.backgroundColor = '#fef3c7'; // Background kuning
+      popupContent.style.border = '4px solid #f97316'; // Border oranye
+
+      setTimeout(() => {
+        popupText.textContent += "\n\n(Error 404!!! 😜)";
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
